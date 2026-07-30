@@ -1,100 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Records - Smart Health Vault</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 0 20px; background: #f4f7f8; }
-    nav { background: #2c7a7b; padding: 14px 20px; margin: 0 -20px 30px -20px; }
-    nav a { color: white; text-decoration: none; margin-right: 24px; font-weight: 600; }
-    nav a:hover { text-decoration: underline; }
-    h1 { color: #205c5d; }
-    #search { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 20px; font-size: 14px; }
-    .record { background: white; border-radius: 10px; padding: 16px; margin: 12px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-    .record .top { display: flex; justify-content: space-between; align-items: center; }
-    .record strong { font-size: 16px; color: #205c5d; }
-    .tag { background: #e6f3f3; color: #2c7a7b; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-    .actions { margin-top: 10px; }
-    .actions button { padding: 6px 14px; margin-right: 8px; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; }
-    .edit-btn { background: #f0ad4e; color: white; }
-    .delete-btn { background: #d9534f; color: white; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Records - Smart Health Vault</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f7fb; margin: 0; padding: 0; }
+  nav { background: #1976d2; padding: 15px 30px; }
+  nav a { color: white; text-decoration: none; margin-right: 25px; font-weight: bold; }
+  .container { max-width: 900px; margin: 40px auto; padding: 20px; }
+  h1 { color: #1976d2; text-align: center; }
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px;
+          overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+  th { background: #1976d2; color: white; }
+  tr:hover { background: #f9f9f9; }
+  .delete-btn { background: #e53935; color: white; border: none; padding: 6px 12px;
+                border-radius: 5px; cursor: pointer; }
+  .delete-btn:hover { background: #c62828; }
+  #status { color: red; font-weight: bold; text-align: center; margin-top: 20px; }
+</style>
 </head>
 <body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="add.html">Add Record</a>
-    <a href="records.html">View Records</a>
-  </nav>
 
-  <h1>All Patient Records</h1>
-  <input id="search" placeholder="🔍 Search by patient name or condition...">
-  <div id="records">Loading...</div>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="add.html">Add Record</a>
+  <a href="records.html">View Records</a>
+</nav>
 
-  <script>
-    const API_URL = '/server/smart_health_vault_function';
-    let allRecords = [];
+<div class="container">
+  <h1>Patient Records</h1>
+  <table id="recordsTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Condition</th>
+        <th>Notes</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="recordsBody"></tbody>
+  </table>
+  <div id="status"></div>
+</div>
 
-    async function loadRecords() {
+<script>
+  const API_URL = "https://smart-health-vault-60080678606.catalystserverless.in/server/smart_health_vault_function/";
+
+  async function loadRecords() {
+    const statusEl = document.getElementById("status");
+    const body = document.getElementById("recordsBody");
+    body.innerHTML = "";
+
+    try {
       const res = await fetch(API_URL);
+      if (!res.ok) throw new Error("Server returned " + res.status);
       const data = await res.json();
-      allRecords = data.map(item => item.HealthRecords);
-      renderRecords(allRecords);
-    }
 
-    function renderRecords(list) {
-      const container = document.getElementById('records');
-      container.innerHTML = '';
-
-      if (list.length === 0) {
-        container.innerHTML = '<p>No records found.</p>';
+      if (data.length === 0) {
+        statusEl.style.color = "gray";
+        statusEl.innerText = "No records found.";
         return;
       }
 
-      list.forEach(rec => {
-        container.innerHTML += `
-          <div class="record">
-            <div class="top">
-              <strong>${rec.patient_name}</strong>
-              <span class="tag">${rec.health_condition}</span>
-            </div>
-            <p>Age: ${rec.age}</p>
-            <p>Notes: ${rec.notes || '-'}</p>
-            <div class="actions">
-              <button class="edit-btn" onclick="editRecord('${rec.ROWID}')">Edit</button>
-              <button class="delete-btn" onclick="deleteRecord('${rec.ROWID}')">Delete</button>
-            </div>
-          </div>`;
+      data.forEach(record => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${record.patient_name}</td>
+          <td>${record.age}</td>
+          <td>${record.health_condition}</td>
+          <td>${record.notes || ""}</td>
+          <td><button class="delete-btn" onclick="deleteRecord('${record.ROWID}')">Delete</button></td>
+        `;
+        body.appendChild(row);
       });
+
+      statusEl.innerText = "";
+    } catch (err) {
+      console.error("Load error:", err);
+      statusEl.style.color = "red";
+      statusEl.innerText = "Unable to connect to the server.";
     }
+  }
 
-    function editRecord(rowid) {
-      window.location.href = 'edit.html?id=' + rowid;
+  async function deleteRecord(rowid) {
+    if (!confirm("Delete this record?")) return;
+    try {
+      const res = await fetch(API_URL + rowid, { method: "DELETE" });
+      if (!res.ok) throw new Error("Server returned " + res.status);
+      loadRecords();
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Unable to delete record.");
     }
+  }
 
-    async function deleteRecord(rowid) {
-      if (!confirm('Are you sure you want to delete this record?')) return;
+  loadRecords();
+</script>
 
-      try {
-        await fetch(API_URL + '/' + rowid, { method: 'DELETE' });
-        loadRecords();
-      } catch (err) {
-        alert('Failed to delete record.');
-      }
-    }
-
-    document.getElementById('search').addEventListener('input', (e) => {
-      const term = e.target.value.toLowerCase();
-      const filtered = allRecords.filter(r =>
-        r.patient_name.toLowerCase().includes(term) ||
-        (r.health_condition || '').toLowerCase().includes(term)
-      );
-      renderRecords(filtered);
-    });
-
-    loadRecords();
-  </script>
 </body>
 </html>
