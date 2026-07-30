@@ -8,11 +8,11 @@
   body { font-family: Arial, sans-serif; background: #f4f7fb; margin: 0; padding: 0; }
   nav { background: #1976d2; padding: 15px 30px; }
   nav a { color: white; text-decoration: none; margin-right: 25px; font-weight: bold; }
-  .container { max-width: 900px; margin: 40px auto; padding: 20px; }
+  .container { max-width: 1100px; margin: 40px auto; padding: 20px; }
   h1 { color: #1976d2; text-align: center; }
   table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px;
-          overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+          overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-size: 0.9em; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
   th { background: #1976d2; color: white; }
   tr:hover { background: #f9f9f9; }
   .delete-btn { background: #e53935; color: white; border: none; padding: 6px 12px;
@@ -37,6 +37,9 @@
         <th>Name</th>
         <th>Age</th>
         <th>Condition</th>
+        <th>Doctor</th>
+        <th>Appointment</th>
+        <th>Blood Type</th>
         <th>Notes</th>
         <th>Action</th>
       </tr>
@@ -71,6 +74,9 @@
           <td>${record.patient_name}</td>
           <td>${record.age}</td>
           <td>${record.health_condition}</td>
+          <td>${record.doctor_name || ""}</td>
+          <td>${record.appointment_time || ""}</td>
+          <td>${record.blood_type || ""}</td>
           <td>${record.notes || ""}</td>
           <td><button class="delete-btn" onclick="deleteRecord('${record.ROWID}')">Delete</button></td>
         `;
