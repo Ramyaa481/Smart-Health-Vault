@@ -80,8 +80,12 @@
           .map(([cond, count]) => `<div class="cond-row"><span>${cond}</span><strong>${count}</strong></div>`)
           .join('');
       } catch (err) {
-        document.getElementById('breakdownList').innerText = 'Unable to load stats.';
-      }
+  console.error(err);
+  document.getElementById('totalCount').innerText = "0";
+  document.getElementById('conditionCount').innerText = "0";
+  document.getElementById('breakdownList').innerHTML =
+      "<p style='color:red'>Unable to connect to the server.</p>";
+}
     }
 
     loadStats();
