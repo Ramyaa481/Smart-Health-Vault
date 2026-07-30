@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "targets": [
+      "smart_health_vault_function"
+    ],
+    "ignore": [],
+    "source": "functions"
+  },
+  "client": {
+    "source": "client"
+  }
+}

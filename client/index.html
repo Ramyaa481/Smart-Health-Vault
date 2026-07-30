@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Health Vault</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 0 20px; background: #f4f7f8; }
+    nav { background: #2c7a7b; padding: 14px 20px; margin: 0 -20px 30px -20px; display: flex; align-items: center; }
+    nav a { color: white; text-decoration: none; margin-right: 24px; font-weight: 600; font-size: 15px; }
+    nav a:hover { text-decoration: underline; }
+    h1 { color: #205c5d; }
+    .hero { text-align: center; padding: 30px 0; }
+    .hero p { font-size: 17px; color: #555; }
+    .btn { display: inline-block; padding: 12px 26px; background: #2c7a7b; color: white; text-decoration: none; border-radius: 6px; margin-top: 16px; font-weight: 600; }
+    .stats { display: flex; gap: 16px; margin-top: 30px; flex-wrap: wrap; }
+    .stat-card { flex: 1; min-width: 150px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); text-align: center; }
+    .stat-card .num { font-size: 32px; font-weight: 700; color: #2c7a7b; }
+    .stat-card .label { color: #666; font-size: 14px; margin-top: 4px; }
+    .breakdown { background: white; border-radius: 10px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .breakdown h3 { margin-top: 0; color: #205c5d; }
+    .cond-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="add.html">Add Record</a>
+    <a href="records.html">View Records</a>
+  </nav>
+
+  <div class="hero">
+    <h1>🩺 Smart Health Vault</h1>
+    <p>A simple, secure way to store and manage patient health records.</p>
+    <a class="btn" href="add.html">+ Add New Record</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="num" id="totalCount">--</div>
+      <div class="label">Total Patients</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="conditionCount">--</div>
+      <div class="label">Unique Conditions</div>
+    </div>
+  </div>
+
+  <div class="breakdown">
+    <h3>Condition Breakdown</h3>
+    <div id="breakdownList">Loading...</div>
+  </div>
+
+  <script>
+    const API_URL = '/server/smart_health_vault_function';
+
+    async function loadStats() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        const records = data.map(item => item.HealthRecords);
+
+        document.getElementById('totalCount').innerText = records.length;
+
+        const conditionMap = {};
+        records.forEach(r => {
+          const cond = r.health_condition || 'Unspecified';
+          conditionMap[cond] = (conditionMap[cond] || 0) + 1;
+        });
+
+        document.getElementById('conditionCount').innerText = Object.keys(conditionMap).length;
+
+        const breakdownEl = document.getElementById('breakdownList');
+        if (records.length === 0) {
+          breakdownEl.innerHTML = '<p>No records yet. Add your first patient record.</p>';
+          return;
+        }
+        breakdownEl.innerHTML = Object.entries(conditionMap)
+          .map(([cond, count]) => `<div class="cond-row"><span>${cond}</span><strong>${count}</strong></div>`)
+          .join('');
+      } catch (err) {
+        document.getElementById('breakdownList').innerText = 'Unable to load stats.';
+      }
+    }
+
+    loadStats();
+  </script>
+</body>
+</html>

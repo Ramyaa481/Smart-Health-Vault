@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Record - Smart Health Vault</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 0 20px; background: #f4f7f8; }
+    nav { background: #2c7a7b; padding: 14px 20px; margin: 0 -20px 30px -20px; }
+    nav a { color: white; text-decoration: none; margin-right: 24px; font-weight: 600; }
+    h1 { color: #205c5d; }
+    .form-card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    label { font-weight: 600; color: #444; font-size: 14px; display: block; margin-top: 14px; }
+    input, textarea { width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    button { padding: 12px 24px; background: #2c7a7b; color: white; border: none; cursor: pointer; border-radius: 6px; margin-top: 20px; font-weight: 600; }
+    #msg { margin-top: 14px; font-weight: 600; color: #27ae60; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="add.html">Add Record</a>
+    <a href="records.html">View Records</a>
+  </nav>
+
+  <h1>Edit Patient Record</h1>
+  <div class="form-card">
+    <label>Patient Name</label>
+    <input id="name">
+
+    <label>Age</label>
+    <input id="age" type="number">
+
+    <label>Condition</label>
+    <input id="condition">
+
+    <label>Notes</label>
+    <textarea id="notes" rows="3"></textarea>
+
+    <button onclick="updateRecord()">Update Record</button>
+    <div id="msg"></div>
+  </div>
+
+  <script>
+    const API_URL = '/server/smart_health_vault_function';
+    const params = new URLSearchParams(window.location.search);
+    const rowid = params.get('id');
+
+    async function loadRecord() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const rec = data.map(item => item.HealthRecords).find(r => r.ROWID === rowid);
+
+      if (rec) {
+        document.getElementById('name').value = rec.patient_name;
+        document.getElementById('age').value = rec.age;
+        document.getElementById('condition').value = rec.health_condition;
+        document.getElementById('notes').value = rec.notes;
+      }
+    }
+
+    async function updateRecord() {
+      const data = {
+        patient_name: document.getElementById('name').value,
+        age: document.getElementById('age').value,
+        health_condition: document.getElementById('condition').value,
+        notes: document.getElementById('notes').value
+      };
+
+      try {
+        await fetch(API_URL + '/' + rowid, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        document.getElementById('msg').innerText = '✔ Record updated! Redirecting...';
+        setTimeout(() => window.location.href = 'records.html', 1000);
+      } catch (err) {
+        document.getElementById('msg').innerText = '✘ Update failed.';
+      }
+    }
+
+    loadRecord();
+  </script>
+</body>
+</html>
