@@ -12,7 +12,7 @@
                border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
   h1 { color: #1976d2; text-align: center; }
   label { display: block; margin-top: 15px; font-weight: bold; }
-  input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc;
+  input, textarea, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc;
                      border-radius: 6px; box-sizing: border-box; }
   button { margin-top: 20px; width: 100%; background: #1976d2; color: white; padding: 12px;
            border: none; border-radius: 6px; font-size: 1em; cursor: pointer; }
@@ -40,6 +40,25 @@
     <label>Health Condition</label>
     <input type="text" id="health_condition" required>
 
+    <label>Doctor Name</label>
+    <input type="text" id="doctor_name" required>
+
+    <label>Appointment Timing</label>
+    <input type="datetime-local" id="appointment_time" required>
+
+    <label>Blood Type</label>
+    <select id="blood_type" required>
+      <option value="">-- Select --</option>
+      <option value="A+">A+</option>
+      <option value="A-">A-</option>
+      <option value="B+">B+</option>
+      <option value="B-">B-</option>
+      <option value="AB+">AB+</option>
+      <option value="AB-">AB-</option>
+      <option value="O+">O+</option>
+      <option value="O-">O-</option>
+    </select>
+
     <label>Notes</label>
     <textarea id="notes" rows="4"></textarea>
 
@@ -61,6 +80,9 @@
       patient_name: document.getElementById("patient_name").value,
       age: document.getElementById("age").value,
       health_condition: document.getElementById("health_condition").value,
+      doctor_name: document.getElementById("doctor_name").value,
+      appointment_time: document.getElementById("appointment_time").value,
+      blood_type: document.getElementById("blood_type").value,
       notes: document.getElementById("notes").value
     };
 
