@@ -93,23 +93,31 @@
 
       try {
         const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data)
+});
 
-        if (!res.ok) throw new Error('Server error');
+const text = await res.text();
+console.log("Server Response:", text);
 
-        msg.innerText = '✔ Record saved successfully!';
-        msg.className = 'success';
-        document.getElementById('name').value = '';
-        document.getElementById('age').value = '';
-        document.getElementById('condition').value = '';
-        document.getElementById('notes').value = '';
+if (!res.ok) {
+  throw new Error(text);
+}
+
+msg.innerText = '✔ Record saved successfully!';
+msg.className = 'success';
+document.getElementById('name').value = '';
+document.getElementById('age').value = '';
+document.getElementById('condition').value = '';
+document.getElementById('notes').value = '';
+       
       } catch (err) {
-        msg.innerText = '✘ Failed to save record. Try again.';
-        msg.className = 'fail';
-      } finally {
+  console.error(err);
+
+  msg.innerText = err.message;
+  msg.className = 'fail';
+} finally {
         btn.disabled = false;
         btn.innerText = 'Save Record';
       }
