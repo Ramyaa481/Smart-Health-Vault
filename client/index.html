@@ -1,94 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Health Vault</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 0 20px; background: #f4f7f8; }
-    nav { background: #2c7a7b; padding: 14px 20px; margin: 0 -20px 30px -20px; display: flex; align-items: center; }
-    nav a { color: white; text-decoration: none; margin-right: 24px; font-weight: 600; font-size: 15px; }
-    nav a:hover { text-decoration: underline; }
-    h1 { color: #205c5d; }
-    .hero { text-align: center; padding: 30px 0; }
-    .hero p { font-size: 17px; color: #555; }
-    .btn { display: inline-block; padding: 12px 26px; background: #2c7a7b; color: white; text-decoration: none; border-radius: 6px; margin-top: 16px; font-weight: 600; }
-    .stats { display: flex; gap: 16px; margin-top: 30px; flex-wrap: wrap; }
-    .stat-card { flex: 1; min-width: 150px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); text-align: center; }
-    .stat-card .num { font-size: 32px; font-weight: 700; color: #2c7a7b; }
-    .stat-card .label { color: #666; font-size: 14px; margin-top: 4px; }
-    .breakdown { background: white; border-radius: 10px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-    .breakdown h3 { margin-top: 0; color: #205c5d; }
-    .cond-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Health Vault</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f7fb; margin: 0; padding: 0; }
+  nav { background: #1976d2; padding: 15px 30px; }
+  nav a { color: white; text-decoration: none; margin-right: 25px; font-weight: bold; }
+  .container { max-width: 900px; margin: 40px auto; padding: 20px; text-align: center; }
+  h1 { color: #1976d2; }
+  .btn { display: inline-block; background: #1976d2; color: white; padding: 12px 24px;
+         border-radius: 6px; text-decoration: none; margin: 20px 0; }
+  .stats { display: flex; justify-content: center; gap: 30px; margin: 30px 0; }
+  .stat-box { background: white; padding: 20px 40px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .stat-box h2 { margin: 0; color: #1976d2; font-size: 2em; }
+  #status { color: red; font-weight: bold; margin-top: 20px; }
+</style>
 </head>
 <body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="add.html">Add Record</a>
-    <a href="records.html">View Records</a>
-  </nav>
 
-  <div class="hero">
-    <h1>🩺 Smart Health Vault</h1>
-    <p>A simple, secure way to store and manage patient health records.</p>
-    <a class="btn" href="add.html">+ Add New Record</a>
-  </div>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="add.html">Add Record</a>
+  <a href="records.html">View Records</a>
+</nav>
+
+<div class="container">
+  <h1>🩺 Smart Health Vault</h1>
+  <p>A simple, secure way to store and manage patient health records.</p>
+  <a class="btn" href="add.html">+ Add New Record</a>
 
   <div class="stats">
-    <div class="stat-card">
-      <div class="num" id="totalCount">--</div>
-      <div class="label">Total Patients</div>
+    <div class="stat-box">
+      <h2 id="totalPatients">0</h2>
+      <p>Total Patients</p>
     </div>
-    <div class="stat-card">
-      <div class="num" id="conditionCount">--</div>
-      <div class="label">Unique Conditions</div>
+    <div class="stat-box">
+      <h2 id="uniqueConditions">0</h2>
+      <p>Unique Conditions</p>
     </div>
   </div>
 
-  <div class="breakdown">
-    <h3>Condition Breakdown</h3>
-    <div id="breakdownList">Loading...</div>
-  </div>
+  <div id="status"></div>
+</div>
 
-  <script>
-    const API_URL = '/server/smart_health_vault_function';
+<script>
+  const API_URL = "https://smart-health-vault-60080678606.catalystserverless.in/server/smart_health_vault_function/";
 
-    async function loadStats() {
-      try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-        const records = data.map(item => item.HealthRecords);
+  async function loadStats() {
+    const statusEl = document.getElementById("status");
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error("Server returned " + res.status);
+      const data = await res.json();
 
-        document.getElementById('totalCount').innerText = records.length;
+      document.getElementById("totalPatients").innerText = data.length;
 
-        const conditionMap = {};
-        records.forEach(r => {
-          const cond = r.health_condition || 'Unspecified';
-          conditionMap[cond] = (conditionMap[cond] || 0) + 1;
-        });
+      const uniqueConditions = new Set(data.map(r => r.health_condition)).size;
+      document.getElementById("uniqueConditions").innerText = uniqueConditions;
 
-        document.getElementById('conditionCount').innerText = Object.keys(conditionMap).length;
-
-        const breakdownEl = document.getElementById('breakdownList');
-        if (records.length === 0) {
-          breakdownEl.innerHTML = '<p>No records yet. Add your first patient record.</p>';
-          return;
-        }
-        breakdownEl.innerHTML = Object.entries(conditionMap)
-          .map(([cond, count]) => `<div class="cond-row"><span>${cond}</span><strong>${count}</strong></div>`)
-          .join('');
-      } catch (err) {
-  console.error(err);
-  document.getElementById('totalCount').innerText = "0";
-  document.getElementById('conditionCount').innerText = "0";
-  document.getElementById('breakdownList').innerHTML =
-      "<p style='color:red'>Unable to connect to the server.</p>";
-}
+      statusEl.innerText = "";
+    } catch (err) {
+      console.error("Connection error:", err);
+      statusEl.innerText = "Unable to connect to the server.";
     }
+  }
 
-    loadStats();
-  </script>
+  loadStats();
+</script>
+
 </body>
 </html>
