@@ -30,7 +30,10 @@ app.post('/', async (req, res) => {
       patient_name: body.patient_name,
       age: parseInt(body.age),
       health_condition: body.health_condition,
-      notes: body.notes
+      notes: body.notes,
+      doctor_name: body.doctor_name,
+      appointment_time: body.appointment_time,
+      blood_type: body.blood_type
     });
     res.status(200).send({ success: true, row });
   } catch (err) {
@@ -51,7 +54,10 @@ app.put('/:rowid', async (req, res) => {
       patient_name: body.patient_name,
       age: parseInt(body.age),
       health_condition: body.health_condition,
-      notes: body.notes
+      notes: body.notes,
+      doctor_name: body.doctor_name,
+      appointment_time: body.appointment_time,
+      blood_type: body.blood_type
     });
     res.status(200).send({ success: true, updated });
   } catch (err) {
