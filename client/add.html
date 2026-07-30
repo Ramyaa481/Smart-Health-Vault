@@ -1,127 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Record - Smart Health Vault</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 0 20px; background: #f4f7f8; }
-    nav { background: #2c7a7b; padding: 14px 20px; margin: 0 -20px 30px -20px; }
-    nav a { color: white; text-decoration: none; margin-right: 24px; font-weight: 600; }
-    nav a:hover { text-decoration: underline; }
-    h1 { color: #205c5d; }
-    .form-card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-    label { font-weight: 600; color: #444; font-size: 14px; display: block; margin-top: 14px; }
-    input, textarea { width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-    .error { color: #c0392b; font-size: 13px; margin-top: 4px; display: none; }
-    button { padding: 12px 24px; background: #2c7a7b; color: white; border: none; cursor: pointer; border-radius: 6px; margin-top: 20px; font-weight: 600; font-size: 15px; }
-    button:disabled { background: #99bcbc; cursor: not-allowed; }
-    #msg { margin-top: 14px; font-weight: 600; }
-    #msg.success { color: #27ae60; }
-    #msg.fail { color: #c0392b; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Record - Smart Health Vault</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f7fb; margin: 0; padding: 0; }
+  nav { background: #1976d2; padding: 15px 30px; }
+  nav a { color: white; text-decoration: none; margin-right: 25px; font-weight: bold; }
+  .container { max-width: 500px; margin: 40px auto; padding: 30px; background: white;
+               border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  h1 { color: #1976d2; text-align: center; }
+  label { display: block; margin-top: 15px; font-weight: bold; }
+  input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc;
+                     border-radius: 6px; box-sizing: border-box; }
+  button { margin-top: 20px; width: 100%; background: #1976d2; color: white; padding: 12px;
+           border: none; border-radius: 6px; font-size: 1em; cursor: pointer; }
+  button:hover { background: #145ca8; }
+  #message { margin-top: 15px; text-align: center; font-weight: bold; }
+</style>
 </head>
 <body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="add.html">Add Record</a>
-    <a href="records.html">View Records</a>
-  </nav>
 
-  <h1>Add Patient Record</h1>
-  <div class="form-card">
+<nav>
+  <a href="index.html">Home</a>
+  <a href="add.html">Add Record</a>
+  <a href="records.html">View Records</a>
+</nav>
+
+<div class="container">
+  <h1>Add New Record</h1>
+  <form id="recordForm">
     <label>Patient Name</label>
-    <input id="name" placeholder="e.g. Hari Suresh">
-    <div class="error" id="nameError">Patient name is required.</div>
+    <input type="text" id="patient_name" required>
 
     <label>Age</label>
-    <input id="age" type="number" placeholder="e.g. 26">
-    <div class="error" id="ageError">Enter a valid age (1-120).</div>
+    <input type="number" id="age" required>
 
-    <label>Condition</label>
-    <input id="condition" placeholder="e.g. Fever, Stomach Pain">
-    <div class="error" id="conditionError">Condition is required.</div>
+    <label>Health Condition</label>
+    <input type="text" id="health_condition" required>
 
     <label>Notes</label>
-    <textarea id="notes" rows="3" placeholder="Additional notes..."></textarea>
+    <textarea id="notes" rows="4"></textarea>
 
-    <button id="saveBtn" onclick="addRecord()">Save Record</button>
-    <div id="msg"></div>
-  </div>
+    <button type="submit">Save Record</button>
+  </form>
+  <div id="message"></div>
+</div>
 
-  <script>
-    const API_URL = '/server/smart_health_vault_function';
+<script>
+  const API_URL = "https://smart-health-vault-60080678606.catalystserverless.in/server/smart_health_vault_function/";
 
-    function validate() {
-      let valid = true;
-      const name = document.getElementById('name').value.trim();
-      const age = document.getElementById('age').value;
-      const condition = document.getElementById('condition').value.trim();
+  document.getElementById("recordForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const messageEl = document.getElementById("message");
+    messageEl.style.color = "black";
+    messageEl.innerText = "Saving...";
 
-      document.getElementById('nameError').style.display = name ? 'none' : 'block';
-      if (!name) valid = false;
+    const payload = {
+      patient_name: document.getElementById("patient_name").value,
+      age: document.getElementById("age").value,
+      health_condition: document.getElementById("health_condition").value,
+      notes: document.getElementById("notes").value
+    };
 
-      const ageNum = parseInt(age);
-      const ageValid = age && ageNum > 0 && ageNum <= 120;
-      document.getElementById('ageError').style.display = ageValid ? 'none' : 'block';
-      if (!ageValid) valid = false;
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-      document.getElementById('conditionError').style.display = condition ? 'none' : 'block';
-      if (!condition) valid = false;
+      if (!res.ok) throw new Error("Server returned " + res.status);
 
-      return valid;
-    }
-
-    async function addRecord() {
-      const msg = document.getElementById('msg');
-      msg.innerText = '';
-      msg.className = '';
-
-      if (!validate()) return;
-
-      const btn = document.getElementById('saveBtn');
-      btn.disabled = true;
-      btn.innerText = 'Saving...';
-
-      const data = {
-        patient_name: document.getElementById('name').value.trim(),
-        age: document.getElementById('age').value,
-        health_condition: document.getElementById('condition').value.trim(),
-        notes: document.getElementById('notes').value.trim()
-      };
-
-      try {
-        const res = await fetch(API_URL, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data)
-});
-
-const text = await res.text();
-console.log("Server Response:", text);
-
-if (!res.ok) {
-  throw new Error(text);
-}
-
-msg.innerText = '✔ Record saved successfully!';
-msg.className = 'success';
-document.getElementById('name').value = '';
-document.getElementById('age').value = '';
-document.getElementById('condition').value = '';
-document.getElementById('notes').value = '';
-       
-      } catch (err) {
-  console.error(err);
-
-  msg.innerText = err.message;
-  msg.className = 'fail';
-} finally {
-        btn.disabled = false;
-        btn.innerText = 'Save Record';
+      const data = await res.json();
+      if (data.success) {
+        messageEl.style.color = "green";
+        messageEl.innerText = "Record saved successfully!";
+        document.getElementById("recordForm").reset();
+      } else {
+        throw new Error(data.error || "Unknown error");
       }
+    } catch (err) {
+      console.error("Save error:", err);
+      messageEl.style.color = "red";
+      messageEl.innerText = "Unable to connect to the server.";
     }
-  </script>
+  });
+</script>
+
 </body>
 </html>
